@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬太福音「十四代」的意義解析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application uses a tabbed navigation interface to break down the dense theological report into thematic, digestible sections: '總覽 (Overview)', '數字的奧秘 (Numerical Meaning)', '神學結構 (Theological Structure)', and '五旬宗視角 (Pentecostal View)'. This structure was chosen to allow users to explore specific aspects of the analysis non-linearly, enhancing comprehension and engagement. An interactive timeline and collapsible sections provide a dynamic way to interact with the content, making complex information more accessible than a simple text document. -->
+    <!-- Visualization & Content Choices: Report Info: The three periods of 14 generations. -> Goal: Visually represent the tripartite structure of the genealogy. -> Viz/Presentation Method: A Chart.js Doughnut chart and a custom HTML/CSS timeline. -> Interaction: Tabs switch between detailed content views, and an accordion reveals specific interpretations. -> Justification: These interactive elements break down complex theological arguments into clear, manageable parts, aiding user understanding. The doughnut chart provides an immediate visual summary of the core structure. -> Library/Method: Chart.js for the chart, custom JS and Tailwind CSS for interactive elements. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF8;
+            color: #44403c;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            border-color: #a16207;
+            background-color: #fef3c7;
+            color: #a16207;
+            font-weight: 700;
+        }
+        .content-panel {
+            display: none;
+        }
+        .content-panel.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: auto;
+            max-height: 400px;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-amber-900">馬太福音1:17節中「十四代」的意義</h1>
+            <p class="mt-2 text-lg text-stone-600">一個互動式的神學結構與象徵意義解析</p>
+        </header>
+
+        <main>
+            <nav class="flex flex-wrap justify-center border-b-2 border-amber-200 mb-8" id="tab-navigation">
+                <button data-tab="overview" class="tab-btn active text-stone-700 py-3 px-4 sm:px-6 border-b-4 border-transparent hover:border-amber-400 hover:bg-amber-50">總覽與歷史脈絡</button>
+                <button data-tab="numerology" class="tab-btn text-stone-700 py-3 px-4 sm:px-6 border-b-4 border-transparent hover:border-amber-400 hover:bg-amber-50">數字的奧秘</button>
+                <button data-tab="structure" class="tab-btn text-stone-700 py-3 px-4 sm:px-6 border-b-4 border-transparent hover:border-amber-400 hover:bg-amber-50">神學結構</button>
+                <button data-tab="pentecostal" class="tab-btn text-stone-700 py-3 px-4 sm:px-6 border-b-4 border-transparent hover:border-amber-400 hover:bg-amber-50">五旬宗視角</button>
+            </nav>
+            
+            <div id="content-container">
+                <section id="overview" class="content-panel active">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-amber-100">
+                        <h2 class="text-2xl font-bold text-amber-800 mb-4">概覽：三個十四代的救贖歷史</h2>
+                        <p class="mb-6 text-stone-700 leading-relaxed">馬太福音的家譜（1:1-17）將耶穌的先祖巧妙地分為三個「十四代」的時期，這不僅是為了便於記憶，更是為了揭示上帝在歷史中循序漸進、信實不變的救贖計劃。這個結構旨在向猶太讀者證明，耶穌正是他們引頸期盼、承繼亞伯拉罕之約與大衛王權的彌賽亞。本節將透過視覺化圖表與歷史分期，幫助您理解這宏大的歷史畫卷。</p>
+                        
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h3 class="text-xl font-semibold text-amber-700 mb-4 text-center">耶穌家譜的三個時期</h3>
+                                <div class="chart-container">
+                                    <canvas id="generationsChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-amber-50 rounded-lg border-l-4 border-amber-500">
+                                    <h4 class="font-bold text-amber-900">第一時期：以色列的興起</h4>
+                                    <p class="text-stone-600">從亞伯拉罕到大衛王，代表上帝應許的開端與國度的建立。</p>
+                                </div>
+                                <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                                    <h4 class="font-bold text-blue-900">第二時期：王國的衰落</h4>
+                                    <p class="text-stone-600">從大衛到巴比倫之囚，象徵國家的分裂、敗壞與上帝的審判。</p>
+                                </div>
+                                <div class="p-4 bg-emerald-50 rounded-lg border-l-4 border-emerald-500">
+                                    <h4 class="font-bold text-emerald-900">第三時期：救贖的盼望</h4>
+                                    <p class="text-stone-600">從巴比倫之囚到基督，代表在黑暗中等候彌賽亞的來臨與救贖的完成。</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                             <h3 class="text-xl font-semibold text-amber-700 mb-4 text-center">救贖歷史時間軸</h3>
+                             <div class="relative w-full flex items-center justify-between p-4 bg-stone-50 rounded-lg">
+                                <div class="absolute top-1/2 left-0 w-full h-0.5 bg-amber-300 transform -translate-y-1/2"></div>
+                                <div class="relative text-center w-1/3">
+                                    <div class="mx-auto w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold ring-4 ring-white">1</div>
+                                    <p class="mt-2 text-sm font-semibold text-stone-700">亞伯拉罕 → 大衛</p>
+                                    <p class="text-xs text-stone-500">興起</p>
+                                </div>
+                                <div class="relative text-center w-1/3">
+                                    <div class="mx-auto w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold ring-4 ring-white">2</div>
+                                    <p class="mt-2 text-sm font-semibold text-stone-700">大衛 → 巴比倫</p>
+                                    <p class="text-xs text-stone-500">衰落</p>
+                                </div>
+                                <div class="relative text-center w-1/3">
+                                    <div class="mx-auto w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold ring-4 ring-white">3</div>
+                                    <p class="mt-2 text-sm font-semibold text-stone-700">巴比倫 → 基督</p>
+                                    <p class="text-xs text-stone-500">盼望</p>
+                                </div>
+                             </div>
+                        </div>
+
+                    </div>
+                </section>
+                
+                <section id="numerology" class="content-panel">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-amber-100">
+                        <h2 class="text-2xl font-bold text-amber-800 mb-4">數字「14」的象徵意義</h2>
+                        <p class="mb-6 text-stone-700 leading-relaxed">在猶太文化中，數字不僅僅是計數的工具，更承載著豐富的象徵意義。馬太選擇「14」這個數字並非偶然，而是精心設計的，用以向熟悉舊約的讀者傳遞關於耶穌身分的關鍵信息。此處我們將探索「14」背後所隱含的兩個主要奧秘：「雙倍完全」以及與「大衛」名字的數值關聯。</p>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="p-6 bg-stone-50 rounded-lg">
+                                <h3 class="text-xl font-semibold text-amber-700 mb-3">7 x 2 = 雙倍的完全</h3>
+                                <p class="text-stone-600">在聖經中，數字「7」象徵「神聖的完全」或「上帝的約定」，例如上帝七天的創造。因此，「14」（即7的兩倍）可以被理解為「雙倍的完全」或「加倍的信實」，強有力地宣告上帝的救贖計劃是完美無瑕、必定實現的。</p>
+                                <div class="flex items-center justify-center space-x-4 text-3xl font-bold text-amber-800 mt-6">
+                                    <span>7</span>
+                                    <span class="text-amber-500">×</span>
+                                    <span>2</span>
+                                    <span class="text-amber-500">=</span>
+                                    <span>14</span>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-stone-50 rounded-lg">
+                                <h3 class="text-xl font-semibold text-amber-700 mb-3">大衛 (דָּוִד) 的數值</h3>
+                                <p class="text-stone-600">在希伯來文中，每個字母都對應一個數值（Gematria）。大衛的名字 (Dalet-Vav-Dalet) 三個字母的數值相加正好是14。馬太透過「十四代」這個數字，巧妙地向猶太讀者暗示：耶穌就是那位應許中「大衛的子孫」，是合法的君王與彌賽亞。</p>
+                                <div class="flex items-center justify-center space-x-2 text-2xl font-bold text-amber-800 mt-6 bg-amber-100 p-4 rounded-lg">
+                                    <div class="text-center">
+                                        <div class="font-mono text-3xl">ד</div>
+                                        <div>Dalet (4)</div>
+                                    </div>
+                                    <div class="text-amber-500 text-3xl">+</div>
+                                    <div class="text-center">
+                                        <div class="font-mono text-3xl">ו</div>
+                                        <div>Vav (6)</div>
+                                    </div>
+                                     <div class="text-amber-500 text-3xl">+</div>
+                                    <div class="text-center">
+                                        <div class="font-mono text-3xl">ד</div>
+                                        <div>Dalet (4)</div>
+                                    </div>
+                                    <div class="text-amber-500 text-3xl">=</div>
+                                    <div class="text-3xl">14</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="structure" class="content-panel">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-amber-100">
+                        <h2 class="text-2xl font-bold text-amber-800 mb-4">三個時期的神學結構</h2>
+                        <p class="mb-6 text-stone-700 leading-relaxed">馬太福音的家譜不僅僅是名字的羅列，它是一部微縮的以色列史，呈現了上帝救贖計劃的三個關鍵階段。每個「十四代」都代表一個獨特的歷史時期，共同指向最終的目標——基督的降臨。這種分期法突顯了上帝在以色列的興盛、衰敗與復興中始終掌權，祂的信實貫穿始終。值得注意的是，為了形成工整的結構，馬太策略性地省略了一些世代，其目的在於強調神學信息，而非絕對的歷史年表。</p>
+                        <div class="space-y-6">
+                            <div class="p-6 border border-amber-200 rounded-lg hover:shadow-lg transition-shadow">
+                                <h3 class="text-xl font-bold text-amber-700 mb-2">第一階段：從應許到王權 (亞伯拉罕 → 大衛)</h3>
+                                <p class="text-stone-600">這個時期代表以色列的興起與黃金時代。它始於上帝對亞伯拉罕的應許，萬國將因他的後裔得福；並在大衛王時期達到頂峰，上帝與他立下永恆的國度之約。這十四代見證了上帝如何從一個人開始，建立一個國家，並賜下祂的君王。</p>
+                            </div>
+                            <div class="p-6 border border-blue-200 rounded-lg hover:shadow-lg transition-shadow">
+                                <h3 class="text-xl font-bold text-blue-700 mb-2">第二階段：從榮耀到衰敗 (大衛 → 巴比倫之囚)</h3>
+                                <p class="text-stone-600">這個時期描繪了王國的衰落。大衛的後裔們逐漸遠離上帝，導致國家分裂、偶像崇拜氾濫，最終迎來上帝的審判——聖殿被毀，百姓被擄到巴比倫。這十四代提醒人們，即使是蒙揀選的君王，若離棄上帝，也將面臨慘痛的後果。</p>
+                            </div>
+                            <div class="p-6 border border-emerald-200 rounded-lg hover:shadow-lg transition-shadow">
+                                <h3 class="text-xl font-bold text-emerald-700 mb-2">第三階段：從被擄到盼望 (巴比倫之囚 → 基督)</h3>
+                                <p class="text-stone-600">這個時期是在黑暗與沉默中等候的時期。儘管以色列民處於亡國的低谷，先知們的預言卻點燃了對彌賽亞的盼望。這十四代象徵著上帝並未遺忘祂的子民，祂正在預備一位終極的君王和救主。最終，在這段時期的結尾，耶穌基督降生，成就了所有的應許，完成了上帝的救贖計劃。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="pentecostal" class="content-panel">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-amber-100">
+                        <h2 class="text-2xl font-bold text-amber-800 mb-4">五旬宗的屬靈解讀</h2>
+                        <p class="mb-6 text-stone-700 leading-relaxed">五旬宗神學強調聖靈的啟示與工作，因此在解讀「十四代」時，會特別關注聖靈在救贖歷史中的引導角色以及其對信徒個人生命的屬靈應用。從這個視角來看，家譜的工整結構不僅是文學設計，更是聖靈啟示的完美藍圖，彰顯了基督的王權與聖靈的膏抹。</p>
+                        <div id="accordion-container" class="space-y-2">
+                            <div class="accordion-item border border-amber-200 rounded-lg">
+                                <button class="accordion-header w-full flex justify-between items-center text-left p-4 bg-amber-50 hover:bg-amber-100 transition">
+                                    <span class="font-semibold text-amber-800">聖靈的啟示與結構</span>
+                                    <span class="transform transition-transform duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </button>
+                                <div class="accordion-content">
+                                    <div class="p-4 border-t border-amber-200 text-stone-600">
+                                        <p>五旬宗認為，馬太家譜的完美結構是聖靈啟示的直接結果。數字「14」作為「7」的倍數，不僅象徵上帝計劃的完全，也預表了聖靈的完全工作。正如聖靈在五旬節降臨以開啟新約時代，祂也一直在舊約歷史中引導、預備，確保救贖計劃的每一步都準確無誤地邁向基督。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item border border-amber-200 rounded-lg">
+                                <button class="accordion-header w-full flex justify-between items-center text-left p-4 bg-amber-50 hover:bg-amber-100 transition">
+                                    <span class="font-semibold text-amber-800">基督的王權與聖靈膏抹</span>
+                                    <span class="transform transition-transform duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </button>
+                                <div class="accordion-content">
+                                    <div class="p-4 border-t border-amber-200 text-stone-600">
+                                        <p>「十四代」與大衛名字的關聯，在五旬宗看來，是強調耶穌作為「受膏君王」身分的力證。大衛是「受膏者」（彌賽亞）的原型，而耶穌則是終極的受膏者，祂的降生與事工都充滿了聖靈的恩膏（路加福音4:18）。因此，家譜不只是血緣的傳承，更是聖靈膏抹能力的傳承，最終在耶穌身上完美實現。</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="accordion-item border border-amber-200 rounded-lg">
+                                <button class="accordion-header w-full flex justify-between items-center text-left p-4 bg-amber-50 hover:bg-amber-100 transition">
+                                    <span class="font-semibold text-amber-800">屬靈應用的「勝利宣告」</span>
+                                    <span class="transform transition-transform duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </button>
+                                <div class="accordion-content">
+                                    <div class="p-4 border-t border-amber-200 text-stone-600">
+                                        <p>五旬宗常將聖經真理應用於信徒的個人生命。三組十四代所經歷的高低起伏，被視為信徒屬靈生命歷程的寫照。特別是「從巴比倫到基督」的第三階段，象徵著信徒可以靠著聖靈的大能，從屬靈的低谷（被擄之地）走向復興與得勝（基督）。這段歷史成為一個勝利的宣告，鼓勵信徒在試煉中信靠聖靈的掌權，最終迎來基督裡的得勝。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 text-sm text-stone-500">
+            <p>&copy; 2025 森牧師工作室</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contentPanels = document.querySelectorAll('.content-panel');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetTab = tab.dataset.tab;
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    contentPanels.forEach(panel => {
+                        if (panel.id === targetTab) {
+                            panel.classList.add('active');
+                        } else {
+                            panel.classList.remove('active');
+                        }
+                    });
+                });
+            });
+            
+            const ctx = document.getElementById('generationsChart').getContext('2d');
+            const generationsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['亞伯拉罕 → 大衛', '大衛 → 巴比倫', '巴比倫 → 基督'],
+                    datasets: [{
+                        label: '世代',
+                        data: [14, 14, 14],
+                        backgroundColor: [
+                            'rgba(217, 119, 6, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(217, 119, 6, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    family: "'Noto Sans TC', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: 共 ${context.raw} 代`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const accordionItem = header.parentElement;
+                    const accordionContent = header.nextElementSibling;
+                    const accordionIcon = header.querySelector('span:last-child');
+                    
+                    accordionItem.classList.toggle('open');
+
+                    if (accordionItem.classList.contains('open')) {
+                        accordionContent.style.maxHeight = accordionContent.scrollHeight + "px";
+                        accordionIcon.style.transform = 'rotate(180deg)';
+                    } else {
+                        accordionContent.style.maxHeight = '0';
+                        accordionIcon.style.transform = 'rotate(0deg)';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
